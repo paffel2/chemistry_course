@@ -66,22 +66,6 @@ class Experiment(models.Model):
         return f"Эксперимент No{self.id}"
 
     def clean(self):
-        # if self.t_min > self.t_max:
-        #    raise ValidationError(
-        #        "Нижний порог температуры спекания должен быть меньше верхнего."
-        #    )
-        # if self.tau_min > self.tau_max:
-        #    raise ValidationError(
-        #        "Нижний порог времени изометрической выдержки должен быть меньше верхнего."
-        #    )
-        # if self.delta_t <= 0:
-        #    raise ValidationError(
-        #        "Шаг варьирования  температуры спекания должен быть больше нуля."
-        #    )
-        # if self.delta_tau <= 0:
-        #    raise ValidationError(
-        #        "Шаг варьирования времени изометрической выдержки должен быть больше нуля."
-        #    )
         return super().clean()
 
     def save(self, *args, **kwargs):
@@ -89,5 +73,60 @@ class Experiment(models.Model):
         return super().save(*args, **kwargs)
 
     def calculate(self):
-        self.results = {"result": "ok"}
+        a_0 = self.math_model.a_0
+        a_1 = self.math_model.a_1
+        a_2 = self.math_model.a_2
+        a_3 = self.math_model.a_3
+        a_4 = self.math_model.a_4
+        a_5 = self.math_model.a_5
+        a_6 = self.math_model.a_6
+        a_7 = self.math_model.a_7
+        a_8 = self.math_model.a_8
+
+        def polynom_calculate(t, tau):
+            return (
+                a_0
+                + a_1 * t
+                + a_2 * tau
+                + a_3 * t * tau
+                + a_4 * t**2
+                + a_5 * tau**2
+                + a_6 * t**2 * tau
+                + a_7 * t * tau**2
+                + a_8 * t**2 * tau**2
+            )
+
+        result_tmin_const = {}
+        result_tmax_const = {}
+        result_tavg_const = {}
+        tavg = (self.t_min + self.t_max) / 2
+
+        tau = self.tau_min
+        while tau <= self.tau_max:
+            result_tmin_const[tau] = polynom_calculate(self.t_min, tau)
+            result_tmax_const[tau] = polynom_calculate(self.t_max, tau)
+            result_tavg_const[tau] = polynom_calculate(tavg, tau)
+            tau += self.delta_tau
+
+        result_taumin_const = {}
+        result_taumax_const = {}
+        result_taumavg_const = {}
+
+        tauavg = (self.tau_min + self.tau_max) / 2
+
+        t = self.t_min
+        while t <= self.t_max:
+            result_taumin_const[t] = polynom_calculate(t, self.tau_min)
+            result_taumax_const[t] = polynom_calculate(t, self.tau_max)
+            result_taumavg_const[t] = polynom_calculate(t, tauavg)
+            t += self.delta_t
+
+        self.results = {
+            "result_tmin_const": result_tmin_const,
+            "result_tmax_const": result_tmax_const,
+            "result_tavg_const": result_tavg_const,
+            "result_taumin_const": result_taumin_const,
+            "result_taumax_const": result_taumax_const,
+            "result_taumavg_const": result_taumavg_const,
+        }
         self.save()
