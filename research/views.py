@@ -3,7 +3,7 @@ from django.contrib.auth.views import LoginView as BaseLoginView
 from django.contrib.auth.views import auth_logout
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views import generic
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -52,34 +52,14 @@ class ExperimentCreateView(generic.FormView):
             messages.success(self.request, "Эксперимент успешно проведен!")
             return redirect("research:experiment_results", pk=experiment.id)
         else:
-            messages.error(self.request, "Эксперимент успешно не проведен!")
-            print(form.errors)
             return self.form_invalid(form)
-
-
-"""
-    def form_valid(self, form):
-        experiment = form.save()
-        try:
-            experiment.calculate()
-            messages.success(self.request, "Эксперимент успешно проведен!")
-            return redirect("research:experiment_results", pk=experiment.id)
-
-        except Exception as e:
-            experiment.delete()
-            messages.error(
-                self.request, f"Ошибка при проведении эксперимента: {str(e)}"
-            )
-            print("HERE1")
-            return self.form_invalid(form)
-"""
 
 
 @method_decorator(user_has_access, "dispatch")
 @method_decorator(never_cache, "dispatch")
 class ExperimentResultsView(generic.DetailView):
     model = Experiment
-    template_name = "experiment_results.html"
+    template_name = "experiment_detail.html"
     context_object_name = "experiment"
 
     def get_context_data(self, **kwargs):
@@ -87,7 +67,85 @@ class ExperimentResultsView(generic.DetailView):
         experiment = self.get_object()
         if experiment.results:
             context["experiment_results"] = str(experiment.results)
+            context["chart_data"] = self.prepare_chart_data(experiment.results)
         return context
+
+    def prepare_chart_data(self, results):
+        """Подготавливает данные для графиков Chart.js"""
+        chart_data = {}
+        if "result_t_const" in results:
+            chart_data["constant_temp"] = {
+                "labels": list(results["result_t_const"].keys()),
+            }
+            data_tmin = []
+            data_tmax = []
+            data_tavg = []
+            for obj in results["result_t_const"].values():
+                data_tmin.append(obj["tmin_const"])
+                data_tmax.append(obj["tmax_const"])
+                data_tavg.append(obj["tavg_const"])
+
+            chart_data["constant_temp"]["datasets"] = [
+                {
+                    "label": f"Tемпература = {self.object.t_min}°C",
+                    "data": data_tmin,
+                    "borderColor": "#ff6384",
+                    "backgroundColor": "rgba(255, 99, 132, 0.1)",
+                    "tension": 0.4,
+                },
+                {
+                    "label": f"Tемпература = {self.object.t_max}°C",
+                    "data": data_tmax,
+                    "borderColor": "#36a2eb",
+                    "backgroundColor": "rgba(54, 162, 235, 0.1)",
+                    "tension": 0.4,
+                },
+                {
+                    "label": f"Tемпература = {(self.object.t_min + self.object.t_max) / 2}°C",
+                    "data": data_tavg,
+                    "borderColor": "#4bc0c0",
+                    "backgroundColor": "rgba(75, 192, 192, 0.1)",
+                    "tension": 0.4,
+                },
+            ]
+
+        if "result_tau_const" in results:
+            chart_data["constant_time"] = {
+                "labels": list(results["result_tau_const"].keys())
+            }
+            data_taumin = []
+            data_taumax = []
+            data_tauavg = []
+            for obj in results["result_tau_const"].values():
+                data_taumin.append(obj["taumin_const"])
+                data_taumax.append(obj["taumax_const"])
+                data_tauavg.append(obj["tauavg_const"])
+
+            chart_data["constant_time"]["datasets"] = [
+                {
+                    "label": f"Время = {self.object.tau_min} мин",
+                    "data": data_taumin,
+                    "borderColor": "#ff9f40",
+                    "backgroundColor": "rgba(255, 159, 64, 0.1)",
+                    "tension": 0.4,
+                },
+                {
+                    "label": f"Время = {self.object.tau_max} мин",
+                    "data": data_taumax,
+                    "borderColor": "#9966ff",
+                    "backgroundColor": "rgba(153, 102, 255, 0.1)",
+                    "tension": 0.4,
+                },
+                {
+                    "label": f"Время = {(self.object.tau_min + self.object.tau_max) / 2} мин",
+                    "data": data_tauavg,
+                    "borderColor": "#ffcd56",
+                    "backgroundColor": "rgba(255, 205, 86, 0.1)",
+                    "tension": 0.4,
+                },
+            ]
+
+        return chart_data
 
 
 @method_decorator(user_has_access, "dispatch")
@@ -98,3 +156,19 @@ class ExperimentListView(generic.ListView):
     context_object_name = "experiments"
     ordering = ["-created_at"]
     paginate_by = 10
+
+
+@method_decorator(user_has_access, "dispatch")
+@method_decorator(never_cache, "dispatch")
+class ExperimentRecalculateView(generic.View):
+    def post(self, request, pk):
+        experiment = get_object_or_404(Experiment, pk=pk)
+
+        try:
+            experiment.calculate()
+            experiment.save()
+            messages.success(request, "Результаты эксперимента успешно пересчитаны!")
+        except Exception as e:
+            messages.error(request, f"Ошибка при пересчете: {str(e)}")
+
+        return redirect("research:experiment_results", pk=experiment.id)

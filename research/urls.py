@@ -7,6 +7,7 @@ from research.views import (
     ExperimentCreateView,
     ExperimentResultsView,
     ExperimentListView,
+    ExperimentRecalculateView,
 )
 
 app_name = "research"
@@ -22,4 +23,9 @@ urlpatterns = [
         name="experiment_results",
     ),
     path("list/", ExperimentListView.as_view(), name="experiment_list"),
+    path(
+        "results/<int:pk>/recalculate/",
+        ExperimentRecalculateView.as_view(),
+        name="experiment_recalculate",
+    ),
 ]

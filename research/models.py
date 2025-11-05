@@ -38,6 +38,9 @@ class Experiment(models.Model):
         validators=[MinValueValidator(-273)],
     )
     t_max = models.FloatField(verbose_name="Верхний порог температуры спекания в С")
+    t_avg = models.FloatField(
+        verbose_name="Средняя температура спекания в С", default=0
+    )
     delta_t = models.FloatField(
         verbose_name="Шаг варьирования  температуры спекания в С",
         validators=[MinValueValidator(-273)],
@@ -49,6 +52,9 @@ class Experiment(models.Model):
     tau_max = models.FloatField(
         verbose_name="Верхний порог времени изометрической выдержки в минутах",
         validators=[MinValueValidator(0)],
+    )
+    tau_avg = models.FloatField(
+        verbose_name="Среднее время изометрической выдержки в минутах", default=0
     )
     delta_tau = models.FloatField(
         verbose_name="Шаг варьирования времени изометрической выдержки в минутах",
@@ -96,37 +102,53 @@ class Experiment(models.Model):
                 + a_8 * t**2 * tau**2
             )
 
-        result_tmin_const = {}
-        result_tmax_const = {}
-        result_tavg_const = {}
-        tavg = (self.t_min + self.t_max) / 2
+        result_t_const = {}
+        self.t_avg = (self.t_min + self.t_max) / 2
 
         tau = self.tau_min
         while tau <= self.tau_max:
-            result_tmin_const[tau] = polynom_calculate(self.t_min, tau)
-            result_tmax_const[tau] = polynom_calculate(self.t_max, tau)
-            result_tavg_const[tau] = polynom_calculate(tavg, tau)
+            result_t_const[tau] = {
+                "tmin_const": None,
+                "tmax_const": None,
+                "tavg_const": None,
+            }
+            result_t_const[tau]["tmin_const"] = round(
+                polynom_calculate(self.t_min, tau), 4
+            )
+            result_t_const[tau]["tmax_const"] = round(
+                polynom_calculate(self.t_max, tau), 4
+            )
+            result_t_const[tau]["tavg_const"] = round(
+                polynom_calculate(self.t_avg, tau), 4
+            )
             tau += self.delta_tau
 
-        result_taumin_const = {}
-        result_taumax_const = {}
-        result_taumavg_const = {}
+        print(f"{result_t_const=}")
+        result_tau_const = {}
 
-        tauavg = (self.tau_min + self.tau_max) / 2
+        self.tau_avg = (self.tau_min + self.tau_max) / 2
 
         t = self.t_min
         while t <= self.t_max:
-            result_taumin_const[t] = polynom_calculate(t, self.tau_min)
-            result_taumax_const[t] = polynom_calculate(t, self.tau_max)
-            result_taumavg_const[t] = polynom_calculate(t, tauavg)
+            result_tau_const[t] = {
+                "taumin_const": None,
+                "taumax_const": None,
+                "tauavg_const": None,
+            }
+            result_tau_const[t]["taumin_const"] = round(
+                polynom_calculate(t, self.tau_min), 4
+            )
+            result_tau_const[t]["taumax_const"] = round(
+                polynom_calculate(t, self.tau_max), 4
+            )
+            result_tau_const[t]["tauavg_const"] = round(
+                polynom_calculate(t, self.tau_avg), 4
+            )
             t += self.delta_t
 
         self.results = {
-            "result_tmin_const": result_tmin_const,
-            "result_tmax_const": result_tmax_const,
-            "result_tavg_const": result_tavg_const,
-            "result_taumin_const": result_taumin_const,
-            "result_taumax_const": result_taumax_const,
-            "result_taumavg_const": result_taumavg_const,
+            "result_t_const": result_t_const,
+            "result_tau_const": result_tau_const,
         }
+        print(self.results)
         self.save()
