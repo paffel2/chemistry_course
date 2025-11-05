@@ -30,3 +30,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+
+    @property
+    def is_can_access(self):
+        return self.is_active and (self.is_superuser or self.is_staff)
