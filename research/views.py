@@ -183,14 +183,11 @@ from django.shortcuts import get_object_or_404
 def export_experiment_to_excel(request, pk):
     experiment = get_object_or_404(Experiment, pk=pk)
 
-    # Создаем новую книгу Excel
     wb = openpyxl.Workbook()
 
-    # Основной лист с информацией об эксперименте
     ws_main = wb.active
     ws_main.title = "Информация об эксперименте"
 
-    # Стили
     header_font = Font(size=14, bold=True, color="FFFFFF")
     subheader_font = Font(size=12, bold=True)
     normal_font = Font(size=11)
@@ -207,7 +204,6 @@ def export_experiment_to_excel(request, pk):
         start_color="3498db", end_color="3498db", fill_type="solid"
     )
 
-    # Заголовок
     ws_main.merge_cells("A1:E1")
     title_cell = ws_main["A1"]
     title_cell.value = f"Результаты эксперимента №{experiment.id}"
@@ -215,7 +211,6 @@ def export_experiment_to_excel(request, pk):
     title_cell.alignment = Alignment(horizontal="center")
     title_cell.fill = header_fill
 
-    # Информация об эксперименте
     info_data = [
         (
             "Математическая модель:",
@@ -236,7 +231,6 @@ def export_experiment_to_excel(request, pk):
         ws_main[f"B{i}"] = value
         ws_main[f"B{i}"].font = normal_font
 
-    # Коэффициенты модели
     ws_main["A12"] = "Коэффициенты математической модели:"
     ws_main["A12"].font = Font(size=12, bold=True)
 
@@ -258,11 +252,16 @@ def export_experiment_to_excel(request, pk):
         ws_main[f"B{i}"] = coef_value
         ws_main[f"B{i}"].font = normal_font
 
-    # Лист с результатами при постоянной температуре
+    ws_main[f"A{i + 1}"] = "Формула рассчета"
+    ws_main[f"A{i + 1}"].font = Font(size=12, bold=True)
+    ws_main[f"A{i + 2}"] = (
+        "y = a₀ + a₁·t + a₂·τ + a₃·t·τ + a₄·t² + a₅·τ² + a₆·t²·τ + a₇·t·τ² + a₈·t²·τ²"
+    )
+    ws_main[f"A{i + 2}"].font = Font(size=12, bold=True)
+
     if experiment.results and "result_t_const" in experiment.results:
         ws_temp = wb.create_sheet("При постоянной температуре")
 
-        # Заголовок
         ws_temp.merge_cells("A1:D1")
         title_cell = ws_temp["A1"]
         title_cell.value = "Результаты при постоянной температуре"
@@ -270,13 +269,11 @@ def export_experiment_to_excel(request, pk):
         title_cell.alignment = Alignment(horizontal="center")
         title_cell.fill = header_fill
 
-        # Подзаголовок
         ws_temp["A2"] = "Время (мин)"
         ws_temp["B2"] = f"T = {experiment.t_min}°C"
         ws_temp["C2"] = f"T = {experiment.t_max}°C"
         ws_temp["D2"] = f"T = {experiment.t_avg}°C"
 
-        # Применяем стили к заголовкам
         for col in ["A", "B", "C", "D"]:
             cell = ws_temp[f"{col}2"]
             cell.font = subheader_font
@@ -284,7 +281,6 @@ def export_experiment_to_excel(request, pk):
             cell.fill = subheader_fill
             cell.border = border
 
-        # Данные
         row = 3
         result_t_const = experiment.results["result_t_const"]
         sorted_times = sorted(result_t_const.keys())
@@ -296,7 +292,6 @@ def export_experiment_to_excel(request, pk):
             ws_temp[f"C{row}"] = data.get("tmax_const", "")
             ws_temp[f"D{row}"] = data.get("tavg_const", "")
 
-            # Применяем стили к данным
             for col in ["A", "B", "C", "D"]:
                 cell = ws_temp[f"{col}{row}"]
                 cell.font = normal_font
@@ -306,16 +301,13 @@ def export_experiment_to_excel(request, pk):
 
             row += 1
 
-        # Добавляем итоговую строку с количеством записей
         ws_temp[f"A{row}"] = f"Всего записей: {len(sorted_times)}"
         ws_temp[f"A{row}"].font = Font(bold=True)
         ws_temp.merge_cells(f"A{row}:D{row}")
 
-    # Лист с результатами при постоянном времени
     if experiment.results and "result_tau_const" in experiment.results:
         ws_time = wb.create_sheet("При постоянном времени")
 
-        # Заголовок
         ws_time.merge_cells("A1:D1")
         title_cell = ws_time["A1"]
         title_cell.value = "Результаты при постоянном времени"
@@ -323,13 +315,11 @@ def export_experiment_to_excel(request, pk):
         title_cell.alignment = Alignment(horizontal="center")
         title_cell.fill = header_fill
 
-        # Подзаголовок
         ws_time["A2"] = "Температура (°C)"
         ws_time["B2"] = f"τ = {experiment.tau_min} мин"
         ws_time["C2"] = f"τ = {experiment.tau_max} мин"
         ws_time["D2"] = f"τ = {experiment.tau_avg} мин"
 
-        # Применяем стили к заголовкам
         for col in ["A", "B", "C", "D"]:
             cell = ws_time[f"{col}2"]
             cell.font = subheader_font
@@ -337,7 +327,6 @@ def export_experiment_to_excel(request, pk):
             cell.fill = subheader_fill
             cell.border = border
 
-        # Данные
         row = 3
         result_tau_const = experiment.results["result_tau_const"]
         sorted_temps = sorted(result_tau_const.keys())
@@ -349,7 +338,6 @@ def export_experiment_to_excel(request, pk):
             ws_time[f"C{row}"] = data.get("taumax_const", "")
             ws_time[f"D{row}"] = data.get("tauavg_const", "")
 
-            # Применяем стили к данным
             for col in ["A", "B", "C", "D"]:
                 cell = ws_time[f"{col}{row}"]
                 cell.font = normal_font
@@ -359,49 +347,9 @@ def export_experiment_to_excel(request, pk):
 
             row += 1
 
-        # Добавляем итоговую строку с количеством записей
         ws_time[f"A{row}"] = f"Всего записей: {len(sorted_temps)}"
         ws_time[f"A{row}"].font = Font(bold=True)
         ws_time.merge_cells(f"A{row}:D{row}")
-
-    # Лист с формулой расчета
-    ws_formula = wb.create_sheet("Формула расчета")
-
-    # Заголовок
-    ws_formula.merge_cells("A1:E1")
-    title_cell = ws_formula["A1"]
-    title_cell.value = "Математическая модель расчета"
-    title_cell.font = header_font
-    title_cell.alignment = Alignment(horizontal="center")
-    title_cell.fill = header_fill
-
-    # Формула
-    formula_lines = [
-        "Формула полиномиальной модели:",
-        "",
-        "y = a₀ + a₁·t + a₂·τ + a₃·t·τ + a₄·t² + a₅·τ² + a₆·t²·τ + a₇·t·τ² + a₈·t²·τ²",
-        "",
-        "где:",
-        "y - результат расчета",
-        "t - температура (°C)",
-        "τ - время изометрической выдержки (мин)",
-        "a₀...a₈ - коэффициенты модели",
-        "",
-        "Значения коэффициентов:",
-    ]
-
-    for i, line in enumerate(formula_lines, start=3):
-        ws_formula[f"A{i}"] = line
-        if i == 5:  # Строка с формулой
-            ws_formula[f"A{i}"].font = Font(size=12, bold=True)
-        else:
-            ws_formula[f"A{i}"].font = normal_font
-
-    # Коэффициенты на листе формулы
-    coef_start_row = len(formula_lines) + 3
-    for i, (coef_name, coef_value) in enumerate(coefficients, start=coef_start_row):
-        ws_formula[f"A{i}"] = f"{coef_name} = {coef_value}"
-        ws_formula[f"A{i}"].font = normal_font
 
     # Настройка ширины колонок для всех листов
     for ws in wb.worksheets:

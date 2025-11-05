@@ -120,9 +120,8 @@ class ExperimentForm(forms.ModelForm):
                 "Шаг варьирования времени изометрической выдержки должен быть больше нуля."
             )
 
-        # Проверка на слишком маленький шаг
         if t_min is not None and t_max is not None and delta_t is not None:
-            if (t_max - t_min) / delta_t > 1000:  # Ограничиваем количество точек
+            if (t_max - t_min) / delta_t > 1000:
                 errors["delta_t"] = (
                     "Слишком маленький шаг температуры. Увеличьте шаг или уменьшите диапазон."
                 )
