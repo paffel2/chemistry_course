@@ -66,24 +66,28 @@ class Experiment(models.Model):
         return f"Эксперимент No{self.id}"
 
     def clean(self):
-        if self.t_min > self.t_max:
-            raise ValidationError(
-                "Нижний порог температуры спекания должен быть меньше верхнего."
-            )
-        if self.tau_min > self.tau_max:
-            raise ValidationError(
-                "Нижний порог времени изометрической выдержки должен быть меньше верхнего."
-            )
-        if self.delta_t <= 0:
-            raise ValidationError(
-                "Шаг варьирования  температуры спекания должен быть больше нуля."
-            )
-        if self.delta_tau <= 0:
-            raise ValidationError(
-                "Шаг варьирования времени изометрической выдержки должен быть больше нуля."
-            )
+        # if self.t_min > self.t_max:
+        #    raise ValidationError(
+        #        "Нижний порог температуры спекания должен быть меньше верхнего."
+        #    )
+        # if self.tau_min > self.tau_max:
+        #    raise ValidationError(
+        #        "Нижний порог времени изометрической выдержки должен быть меньше верхнего."
+        #    )
+        # if self.delta_t <= 0:
+        #    raise ValidationError(
+        #        "Шаг варьирования  температуры спекания должен быть больше нуля."
+        #    )
+        # if self.delta_tau <= 0:
+        #    raise ValidationError(
+        #        "Шаг варьирования времени изометрической выдержки должен быть больше нуля."
+        #    )
         return super().clean()
 
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    def calculate(self):
+        self.results = {"result": "ok"}
+        self.save()

@@ -1,0 +1,58 @@
+{% block title %}Список экспериментов{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title">История экспериментов</h4>
+                <a href="{% url 'research:experiment_create' %}" class="btn btn-primary">
+                    Новый эксперимент
+                </a>
+            </div>
+            <div class="card-body">
+                {% if experiments %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Модель</th>
+                                <th>Дата проведения</th>
+                                <th>Температура (°C)</th>
+                                <th>Время (мин)</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for experiment in experiments %}
+                            <tr>
+                                <td>{{ experiment.id }}</td>
+                                <td>{{ experiment.math_model.name|default:"Не указана" }}</td>
+                                <td>{{ experiment.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>{{ experiment.t_min }} - {{ experiment.t_max }}</td>
+                                <td>{{ experiment.tau_min }} - {{ experiment.tau_max }}</td>
+                                <td>
+                                    <a href="{% url 'research:experiment_results' experiment.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                       Результаты
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted">Эксперименты еще не проводились</p>
+                    <a href="{% url 'research:experiment_create' %}" class="btn btn-primary">
+                        Провести первый эксперимент
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
