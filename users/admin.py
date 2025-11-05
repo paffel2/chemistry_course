@@ -24,13 +24,13 @@ class UserAdmin(BaseUserAdmin):
             "Главная информация",
             {"fields": ("email", "password", "name")},
         ),
-        ("Статус", {"fields": ("is_staff", "is_superuser", "is_active")}),
+        ("Статус", {"fields": ("is_researcher", "is_superuser", "is_active")}),
     )
-    list_display = ("id", "email", "name", "is_superuser", "is_staff", "is_active")
+    list_display = ("id", "email", "name", "is_superuser", "is_researcher", "is_active")
     ordering = ["-id"]
     search_fields = ["email"]
     form = UserChangeForm
-    list_filter = ("is_superuser", "is_staff", "is_active")
+    list_filter = ("is_superuser", "is_researcher", "is_active")
     filter_horizontal = ()
 
 

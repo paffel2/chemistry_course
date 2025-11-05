@@ -10,7 +10,12 @@ def user_has_access(
     member, redirecting to the login page if necessary.
     """
     actual_decorator = user_passes_test(
-        lambda u: (u.is_staff or u.is_superuser) and u.is_active,
+        lambda u: (
+            u.is_staff
+            or u.is_superuser
+            or (hasattr(u, "is_researcher") and u.is_researcher)
+        )
+        and u.is_active,
         login_url=login_url,
         redirect_field_name=redirect_field_name,
     )

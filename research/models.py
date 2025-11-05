@@ -1,4 +1,3 @@
-from tabnanny import verbose
 from django.db import models
 
 
@@ -15,3 +14,10 @@ class MathModel(models.Model):
     a_6 = models.FloatField(verbose_name="Значение коэффициента a6")
     a_7 = models.FloatField(verbose_name="Значение коэффициента a7")
     a_8 = models.FloatField(verbose_name="Значение коэффициента a8")
+
+    class Meta:
+        verbose_name = "Математическая модель"
+        verbose_name_plural = "Математические модели"
+
+    def __str__(self):
+        return self.name

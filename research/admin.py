@@ -1,3 +1,5 @@
 from django.contrib import admin
+from research.models import MathModel
 
-# Register your models here.
+
+admin.site.register(MathModel)

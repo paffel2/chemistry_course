@@ -12,13 +12,11 @@ class User(AbstractUser):
     is_superuser = models.BooleanField(
         verbose_name="Статус суперпользователя (администратора)", default=False
     )
-    is_staff = models.BooleanField(
+    is_researcher = models.BooleanField(
         verbose_name="Статус сотрудника (исследователя)", default=False
     )
     is_active = models.BooleanField(verbose_name="Активный", default=True)
     username = None
-    groups = None
-    user_permissions = None
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -33,4 +31,6 @@ class User(AbstractUser):
 
     @property
     def is_can_access(self):
-        return self.is_active and (self.is_superuser or self.is_staff)
+        return self.is_active and (
+            self.is_superuser or self.is_staff or self.is_researcher
+        )
