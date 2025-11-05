@@ -1,3 +1,4 @@
+import math
 from django.contrib.auth.forms import AuthenticationForm
 from users.models import User
 from django import forms
@@ -38,6 +39,43 @@ class AuthForm(AuthenticationForm):
 
 
 class ExperimentForm(forms.ModelForm):
+
+    math_model = forms.ModelChoiceField(
+        queryset=MathModel.objects.all(),
+        label="Математическая модель",
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    t_min = forms.FloatField(
+        label="Нижний порог температуры спекания",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
+    t_max = forms.FloatField(
+        label="Верхний порог температуры спекания",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
+    delta_t = forms.FloatField(
+        label="Шаг варьирования температуры спекания",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
+    tau_min = forms.FloatField(
+        label="Нижний порог времени изометрической выдержки",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
+    tau_max = forms.FloatField(
+        label="Верхний порог времени изометрической выдержки",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
+    delta_tau = forms.FloatField(
+        label="Шаг варьирования времени изометрической выдержки",
+        widget=forms.NumberInput(attrs={"class": "form-control"}),
+    )
+
     class Meta:
         model = Experiment
         fields = [
@@ -94,7 +132,6 @@ class ExperimentForm(forms.ModelForm):
                 errors["delta_tau"] = (
                     "Слишком маленький шаг времени. Увеличьте шаг или уменьшите диапазон."
                 )
-        print(errors)
         if errors:
             raise ValidationError(errors)
 

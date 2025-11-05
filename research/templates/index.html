@@ -1,4 +1,10 @@
-<body>
+{% extends 'base.html' %}
     <h1>Добро пожаловать в систему</h1>
     <a href="{% url 'research:logout' %}">Выход</a>
-</body>
+
+    <a href="{% url 'research:experiment_create' %}" class="btn btn-primary">
+        Новый эксперимент
+    </a>
+    <a href="{% url 'research:experiment_list' %}" class="btn btn-primary">
+        История экспериментов
+    </a>

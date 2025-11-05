@@ -1,5 +1,5 @@
+{% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Результаты эксперимента{% endblock %}
 
 {% block content %}
@@ -7,11 +7,11 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h4 class="card-title">Результаты эксперимента №{{ experiment.id }}</h4>
-                <p class="card-subtitle text-muted">
+                <h4 class="card-header">Результаты эксперимента №{{ experiment.id }}</h4>
+                <h5>
                     Модель: {{ experiment.math_model.name }}<br>
                     Проведен: {{ experiment.created_at|date:"d.m.Y H:i" }}
-                </p>
+                </h5>
             </div>
             <div>
                 <form method="post" action="{% url 'research:experiment_recalculate' experiment.id %}" class="d-inline">
@@ -29,6 +29,9 @@
                         <ul>
                             <li>Температура: от {{ experiment.t_min }}°C до {{ experiment.t_max }}°C (шаг: {{ experiment.delta_t }}°C)</li>
                             <li>Время: от {{ experiment.tau_min }} мин до {{ experiment.tau_max }} мин (шаг: {{ experiment.delta_tau }} мин)</li>
+                            <li>Затрачено времени на рассчет: {{ experiment.calculation_time }} сек</li>
+                            <li>Выполнено {{ experiment.number_of_math_operations }} математических операций</li>
+                            <li>Затрачено оперативной памяти {{ experiment.memory_used }} МБ</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
@@ -145,6 +148,9 @@
                 <div class="mt-3">
                     <a href="{% url 'research:experiment_create' %}" class="btn btn-primary">
                         Новый эксперимент
+                    </a>
+                    <a href="{% url 'research:experiment_export_excel' experiment.id %}" class="btn btn-primary">
+                        Скачать результаты (Excel)
                     </a>
                 </div>
                 {% else %}

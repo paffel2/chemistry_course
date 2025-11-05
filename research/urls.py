@@ -8,6 +8,7 @@ from research.views import (
     ExperimentResultsView,
     ExperimentListView,
     ExperimentRecalculateView,
+    export_experiment_to_excel,
 )
 
 app_name = "research"
@@ -27,5 +28,10 @@ urlpatterns = [
         "results/<int:pk>/recalculate/",
         ExperimentRecalculateView.as_view(),
         name="experiment_recalculate",
+    ),
+    path(
+        "results/<int:pk>/export-excel/",
+        export_experiment_to_excel,
+        name="experiment_export_excel",
     ),
 ]

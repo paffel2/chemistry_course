@@ -1,6 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from datetime import datetime
+import psutil
+import os
 
 
 class MathModel(models.Model):
@@ -63,6 +66,13 @@ class Experiment(models.Model):
     results = models.JSONField(
         verbose_name="Результаты эксперимента", null=True, blank=True, default=list
     )
+    calculation_time = models.FloatField(default=0, verbose_name="Время расчета")
+    number_of_math_operations = models.IntegerField(
+        default=0, verbose_name="Количество математических операций"
+    )
+    memory_used = models.FloatField(
+        default=0, verbose_name="Затрачено оперативной памяти"
+    )
 
     class Meta:
         verbose_name = "Эксперимент"
@@ -79,6 +89,9 @@ class Experiment(models.Model):
         return super().save(*args, **kwargs)
 
     def calculate(self):
+        process = psutil.Process(os.getpid())
+        memory_before = process.memory_info().rss / 1024 / 1024
+        start_time = datetime.now()
         a_0 = self.math_model.a_0
         a_1 = self.math_model.a_1
         a_2 = self.math_model.a_2
@@ -88,6 +101,8 @@ class Experiment(models.Model):
         a_6 = self.math_model.a_6
         a_7 = self.math_model.a_7
         a_8 = self.math_model.a_8
+
+        number_of_math_operations = 0
 
         def polynom_calculate(t, tau):
             return (
@@ -104,6 +119,8 @@ class Experiment(models.Model):
 
         result_t_const = {}
         self.t_avg = (self.t_min + self.t_max) / 2
+
+        number_of_math_operations += 1
 
         tau = self.tau_min
         while tau <= self.tau_max:
@@ -122,12 +139,11 @@ class Experiment(models.Model):
                 polynom_calculate(self.t_avg, tau), 4
             )
             tau += self.delta_tau
-
-        print(f"{result_t_const=}")
+            number_of_math_operations += 79
         result_tau_const = {}
 
         self.tau_avg = (self.tau_min + self.tau_max) / 2
-
+        number_of_math_operations += 1
         t = self.t_min
         while t <= self.t_max:
             result_tau_const[t] = {
@@ -145,10 +161,14 @@ class Experiment(models.Model):
                 polynom_calculate(t, self.tau_avg), 4
             )
             t += self.delta_t
-
+            number_of_math_operations += 79
         self.results = {
             "result_t_const": result_t_const,
             "result_tau_const": result_tau_const,
         }
-        print(self.results)
+        memory_after = process.memory_info().rss / 1024 / 1024
+        self.memory_used = round(memory_after - memory_before, 4)
+        end_time = datetime.now()
+        self.calculation_time = (end_time - start_time).total_seconds()
+        self.number_of_math_operations = number_of_math_operations
         self.save()

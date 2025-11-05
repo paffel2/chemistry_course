@@ -1,5 +1,124 @@
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Вход</button>
-</form>
+{% extends 'base.html' %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card fade-in">
+            <div class="card-header text-center">
+                <h4 class="card-title mb-0">Вход в систему</h4>
+            </div>
+            <div class="card-body p-4">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Неверная почта или пароль. Пожалуйста, попробуйте снова.
+                </div>
+                {% endif %}
+
+                {% if next %}
+                    {% if user.is_authenticated %}
+                    <div class="alert alert-warning">
+                        У вашей учетной записи нет доступа к этой странице.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        Пожалуйста, войдите в систему для доступа к этой странице.
+                    </div>
+                    {% endif %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Email адрес</label>
+                        <input type="text" 
+                               name="username" 
+                               id="id_username" 
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                               placeholder="Введите email адрес"
+                               required
+                               autofocus>
+                        {% if form.username.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.username.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_password" class="form-label">Пароль</label>
+                        <input type="password" 
+                               name="password" 
+                               id="id_password" 
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                               placeholder="Введите пароль"
+                               required>
+                        {% if form.password.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.password.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Скрытое поле next -->
+                    {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    <!-- Кнопка входа -->
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">Войти</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .justify-content-center {
+        justify-content: center;
+    }
+    
+    .login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    
+    .small {
+        font-size: 0.875rem;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автофокус на поле username
+        const usernameInput = document.getElementById('id_username');
+        if (usernameInput) {
+            usernameInput.focus();
+        }
+        
+        // Показ индикатора загрузки при отправке формы
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = 'Вход...';
+                submitBtn.disabled = true;
+            }
+        });
+    });
+</script>
+{% endblock %}
