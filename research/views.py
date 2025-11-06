@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 
 from research.forms import AuthForm, ExperimentForm
@@ -172,12 +172,6 @@ class ExperimentRecalculateView(generic.View):
             messages.error(request, f"Ошибка при пересчете: {str(e)}")
 
         return redirect("research:experiment_results", pk=experiment.id)
-
-
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 
 
 def export_experiment_to_excel(request, pk):
