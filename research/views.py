@@ -201,7 +201,7 @@ def export_experiment_to_excel(request, pk):
     ws_main.merge_cells("A1:E1")
     title_cell = ws_main["A1"]
     title_cell.value = f"Результаты эксперимента №{experiment.id}"
-    title_cell.font = Font(size=16, bold=True)
+    title_cell.font = header_font
     title_cell.alignment = Alignment(horizontal="center")
     title_cell.fill = header_fill
 
