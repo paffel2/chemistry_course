@@ -7,9 +7,6 @@ from django.core.exceptions import ValidationError
 
 
 class AuthForm(AuthenticationForm):
-    """
-    Форма авторизации
-    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,38 +39,44 @@ class ExperimentForm(forms.ModelForm):
 
     math_model = forms.ModelChoiceField(
         queryset=MathModel.objects.all(),
-        label="Математическая модель",
+        label="Материал",
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
     t_min = forms.FloatField(
-        label="Нижний порог температуры спекания",
+        label="Нижний порог температуры спекания (°C)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
+        initial=1300
     )
 
     t_max = forms.FloatField(
-        label="Верхний порог температуры спекания",
+        label="Верхний порог температуры спекания (°C)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
+        initial=1550
     )
 
     delta_t = forms.FloatField(
-        label="Шаг варьирования температуры спекания",
+        label="Шаг варьирования температуры спекания (°C)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
+        initial=10
     )
 
     tau_min = forms.FloatField(
-        label="Нижний порог времени изометрической выдержки",
+        label="Нижний порог времени изометрической выдержки (мин)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
+        initial=30
     )
 
     tau_max = forms.FloatField(
-        label="Верхний порог времени изометрической выдержки",
+        label="Верхний порог времени изометрической выдержки (мин)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
+        initial=60
     )
 
     delta_tau = forms.FloatField(
-        label="Шаг варьирования времени изометрической выдержки",
+        label="Шаг варьирования времени изометрической выдержки (мин)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
+        initial=2
     )
 
     class Meta:

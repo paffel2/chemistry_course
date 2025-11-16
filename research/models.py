@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.core.exceptions import ValidationError
 from datetime import datetime
 import psutil
 import os
@@ -21,8 +20,8 @@ class MathModel(models.Model):
     a_8 = models.FloatField(verbose_name="Значение коэффициента a8")
 
     class Meta:
-        verbose_name = "Математическая модель"
-        verbose_name_plural = "Математические модели"
+        verbose_name = "Материал"
+        verbose_name_plural = "Материалы"
 
     def __str__(self):
         return self.name
@@ -31,7 +30,7 @@ class MathModel(models.Model):
 class Experiment(models.Model):
     math_model = models.ForeignKey(
         MathModel,
-        verbose_name="Математическая модель",
+        verbose_name="Материал",
         on_delete=models.SET_NULL,
         null=True,
     )
@@ -40,7 +39,7 @@ class Experiment(models.Model):
         verbose_name="Нижний порог температуры спекания в С",
         validators=[MinValueValidator(-273)],
     )
-    t_max = models.FloatField(verbose_name="Верхний порог температуры спекания в С")
+    t_max = models.FloatField(verbose_name="Верхний порог температуры спекания в С",validators=[MinValueValidator(-273)])
     t_avg = models.FloatField(
         verbose_name="Средняя температура спекания в С", default=0
     )
@@ -90,7 +89,7 @@ class Experiment(models.Model):
 
     def calculate(self):
         process = psutil.Process(os.getpid())
-        memory_before = process.memory_info().rss / 1024 / 1024
+        memory_before = process.memory_info().rss / 1024
         start_time = datetime.now()
         a_0 = self.math_model.a_0
         a_1 = self.math_model.a_1
@@ -103,7 +102,7 @@ class Experiment(models.Model):
         a_8 = self.math_model.a_8
 
         number_of_math_operations = 0
-
+ 
         def polynom_calculate(t, tau):
             return (
                 a_0
@@ -166,9 +165,10 @@ class Experiment(models.Model):
             "result_t_const": result_t_const,
             "result_tau_const": result_tau_const,
         }
-        memory_after = process.memory_info().rss / 1024 / 1024
+        memory_after = process.memory_info().rss / 1024
         self.memory_used = round(memory_after - memory_before, 4)
         end_time = datetime.now()
-        self.calculation_time = (end_time - start_time).total_seconds()
+        calctime = round((end_time.timestamp() - start_time.timestamp())*1000,2)
+        self.calculation_time = calctime
         self.number_of_math_operations = number_of_math_operations
         self.save()

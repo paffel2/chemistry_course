@@ -6,10 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Система математического моделирования{% endblock %}</title>
     
-    <!-- Chart.js -->
     <script src="{% static 'js/chart.js' %}"></script>
     
-    <!-- Custom CSS -->
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -446,14 +444,31 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Шапка -->
     <nav class="navbar">
         <div class="container">
             <div class="navbar-text">Система математического моделирования</div>
+            <div class="footer-nav-content">
+                <div class="footer-brand"></div>
+                <div class="footer-links">
+                    <a href="{% url 'research:experiment_list' %}" 
+                       class="footer-link {% if request.resolver_match.url_name == 'experiment_list' %}active{% endif %}">
+                        Список экспериментов
+                    </a>
+                    
+                    <a href="{% url 'research:experiment_create' %}" 
+                       class="footer-link {% if request.resolver_match.url_name == 'experiment_create' %}active{% endif %}">
+                        Создать эксперимент
+                    </a>
+                    <a href="{% url 'research:logout' %}" 
+                       class="footer-link">
+                        Выйти
+                    </a>
+                </div>
+                
+            </div>
         </div>
     </nav>
 
-    <!-- Основной контент -->
     <div class="main-container fade-in">
         <div class="container-fluid">
             {% block content %}
@@ -461,7 +476,6 @@
         </div>
     </div>
 
-    <!-- Футер с навигацией -->
     <footer class="footer-nav">
         <div class="container">
             <div class="footer-nav-content">

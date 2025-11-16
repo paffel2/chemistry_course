@@ -9,14 +9,14 @@
             <div class="card-header">
                 <h4 class="card-header">Результаты эксперимента №{{ experiment.id }}</h4>
                 <h5>
-                    Модель: {{ experiment.math_model.name }}<br>
+                    Материал: {{ experiment.math_model.name }}<br>
                     Проведен: {{ experiment.created_at|date:"d.m.Y H:i" }}
                 </h5>
             </div>
             <div>
                 <form method="post" action="{% url 'research:experiment_recalculate' experiment.id %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-warning btn-sm" 
+                        <button type="submit" class="btn btn-warning btn-sm mt-4 ms-3" 
                                 onclick="return confirm('Вы уверены, что хотите пересчитать результаты?')">
                             <i class="fas fa-sync-alt"></i> Пересчитать
                         </button>
@@ -29,9 +29,9 @@
                         <ul>
                             <li>Температура: от {{ experiment.t_min }}°C до {{ experiment.t_max }}°C (шаг: {{ experiment.delta_t }}°C)</li>
                             <li>Время: от {{ experiment.tau_min }} мин до {{ experiment.tau_max }} мин (шаг: {{ experiment.delta_tau }} мин)</li>
-                            <li>Затрачено времени на рассчет: {{ experiment.calculation_time }} сек</li>
+                            <li>Затрачено времени на расчет: {{ experiment.calculation_time }} мс</li>
                             <li>Выполнено {{ experiment.number_of_math_operations }} математических операций</li>
-                            <li>Затрачено оперативной памяти {{ experiment.memory_used }} МБ</li>
+                            <li>Затрачено оперативной памяти {{ experiment.memory_used }} КБ</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
@@ -51,12 +51,11 @@
                 </div>
 
                 {% if experiment.results %}
-                <!-- Графики -->
                 <div class="row">
                     <div class="col-12 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Зависимость результата от времени при постоянной температуре</h5>
+                                <h5>Зависимость остаточной пористости твердого сплава от времени при постоянной температуре</h5>
                             </div>
                             <div class="card-body">
                                 <canvas id="constantTempChart" height="100"></canvas>
@@ -67,7 +66,7 @@
                     <div class="col-12 mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Зависимость результата от температуры при постоянном времени</h5>
+                                <h5>Зависимость остаточной пористости твердого сплава от температуры при постоянном времени</h5>
                             </div>
                             <div class="card-body">
                                 <canvas id="constantTimeChart" height="100"></canvas>
@@ -76,14 +75,12 @@
                     </div>
                 </div>
 
-                <!-- Таблицы с результатами -->
                 <h5>Детальные результаты:</h5>
                 <div class="row">
-                    <!-- Результаты при постоянной температуре -->
-                    <div class="col-md-6 mb-4">
+                    <div class="col">
                         <div class="card">
                             <div class="card-header">
-                                <h6>При постоянной температуре</h6>
+                                <h5>При постоянной температуре</h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -91,18 +88,18 @@
                                         <thead>
                                             <tr>
                                                 <th>Время (мин)</th>
-                                                <th>Результат при температуре {{ experiment.t_min }}°C</th>
-                                                <th>Результат при температуре {{ experiment.t_avg }}°C</th>
-                                                <th>Результат при температуре {{ experiment.t_max }}°C</th>
+                                                <th>Остаточная пористость при температуре {{ experiment.t_min }}°C</th>
+                                                <th>Остаточная пористость при температуре {{ experiment.t_avg }}°C</th>
+                                                <th>Остаточная пористость при температуре {{ experiment.t_max }}°C</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for time, value in experiment.results.result_t_const.items %}
                                             <tr>
                                                 <td>{{ time }}</td>
-                                                <td>{{ value|get_item:"tmin_const"|floatformat:4 }}</td>
-                                                <td>{{ value|get_item:"tavg_const"|floatformat:4 }}</td>
-                                                <td>{{ value|get_item:"tmax_const"|floatformat:4 }}</td>
+                                                <td>{{ value|get_item:"tmin_const"|floatformat:2 }}</td>
+                                                <td>{{ value|get_item:"tavg_const"|floatformat:2 }}</td>
+                                                <td>{{ value|get_item:"tmax_const"|floatformat:2 }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -111,11 +108,12 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="col-md-6 mb-4">
+                </div>
+                 <div class="row">
+                    <div class="col">
                         <div class="card">
                             <div class="card-header">
-                                <h6>При постоянном времени (τ = {{ experiment.tau_min }} мин)</h6>
+                                <h5>При постоянном времени изометрической выдержки</h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -123,18 +121,18 @@
                                         <thead>
                                             <tr>
                                                 <th>Температура (°C)</th>
-                                                <th>Результат τ = {{ experiment.tau_min }} мин</th>
-                                                <th>Результат τ = {{ experiment.tau_avg }} мин</th>
-                                                <th>Результат τ = {{ experiment.tau_max }} мин</th>
+                                                <th>Остаточная пористость при τ = {{ experiment.tau_min }} мин</th>
+                                                <th>Остаточная пористость при τ = {{ experiment.tau_avg }} мин</th>
+                                                <th>Остаточная пористость при τ = {{ experiment.tau_max }} мин</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for temp, value in experiment.results.result_tau_const.items %}
                                             <tr>
                                                 <td>{{ temp }}</td>
-                                                <td>{{ value|get_item:"taumin_const"|floatformat:4 }}</td>
-                                                <td>{{ value|get_item:"tauavg_const"|floatformat:4 }}</td>
-                                                <td>{{ value|get_item:"taumax_const"|floatformat:4 }}</td>
+                                                <td>{{ value|get_item:"taumin_const"|floatformat:2 }}</td>
+                                                <td>{{ value|get_item:"tauavg_const"|floatformat:2 }}</td>
+                                                <td>{{ value|get_item:"taumax_const"|floatformat:2 }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -169,7 +167,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     {% if chart_data %}
     
-    // График при постоянной температуре
     const constantTempCtx = document.getElementById('constantTempChart').getContext('2d');
     new Chart(constantTempCtx, {
         type: 'line',
@@ -179,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Зависимость результата от времени изометрической выдержки'
+                    text: 'Зависимость остаточной пористости твердого сплава от времени изометрической выдержки'
                 },
                 tooltip: {
                     mode: 'index',
@@ -196,14 +193,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 y: {
                     title: {
                         display: true,
-                        text: 'Результат расчета'
+                        text: 'Остаточная пористость'
                     }
                 }
             }
         }
     });
 
-    // График при постоянном времени
     const constantTimeCtx = document.getElementById('constantTimeChart').getContext('2d');
     new Chart(constantTimeCtx, {
         type: 'line',
@@ -213,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Зависимость результата от температуры спекания'
+                    text: 'Зависимость остаточной пористости твердого сплава от температуры спекания'
                 },
                 tooltip: {
                     mode: 'index',
@@ -230,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 y: {
                     title: {
                         display: true,
-                        text: 'Результат расчета'
+                        text: 'Остаточная пористость'
                     }
                 }
             }

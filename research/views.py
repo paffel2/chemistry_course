@@ -34,8 +34,9 @@ class LogoutView(generic.View):
 
 @method_decorator(user_has_access, "dispatch")
 @method_decorator(never_cache, "dispatch")
-class IndexView(generic.TemplateView):
-    template_name = "index.html"
+class IndexView(generic.RedirectView):
+    def get(self,*args,**kwargs):
+        return HttpResponseRedirect(reverse_lazy("research:experiment_list"))
 
 
 @method_decorator(user_has_access, "dispatch")
@@ -50,7 +51,6 @@ class ExperimentCreateView(generic.FormView):
         if form.is_valid():
             experiment = form.save()
             experiment.calculate()
-            messages.success(self.request, "Эксперимент успешно проведен!")
             return redirect("research:experiment_results", pk=experiment.id)
         else:
             return self.form_invalid(form)
@@ -71,7 +71,6 @@ class ExperimentResultsView(generic.DetailView):
         return context
 
     def prepare_chart_data(self, results):
-        """Подготавливает данные для графиков Chart.js"""
         chart_data = {}
         if "result_t_const" in results:
             chart_data["constant_temp"] = {
@@ -167,7 +166,6 @@ class ExperimentRecalculateView(generic.View):
         try:
             experiment.calculate()
             experiment.save()
-            messages.success(request, "Результаты эксперимента успешно пересчитаны!")
         except Exception as e:
             messages.error(request, f"Ошибка при пересчете: {str(e)}")
 
@@ -207,7 +205,7 @@ def export_experiment_to_excel(request, pk):
 
     info_data = [
         (
-            "Математическая модель:",
+            "Материал:",
             experiment.math_model.name if experiment.math_model else "Не указана",
         ),
         ("Дата проведения:", experiment.created_at.strftime("%d.%m.%Y %H:%M")),
@@ -246,7 +244,7 @@ def export_experiment_to_excel(request, pk):
         ws_main[f"B{i}"] = coef_value
         ws_main[f"B{i}"].font = normal_font
 
-    ws_main[f"A{i + 1}"] = "Формула рассчета"
+    ws_main[f"A{i + 1}"] = "Формула расчета"
     ws_main[f"A{i + 1}"].font = Font(size=12, bold=True)
     ws_main[f"A{i + 2}"] = (
         "y = a₀ + a₁·t + a₂·τ + a₃·t·τ + a₄·t² + a₅·τ² + a₆·t²·τ + a₇·t·τ² + a₈·t²·τ²"
@@ -256,9 +254,9 @@ def export_experiment_to_excel(request, pk):
     if experiment.results and "result_t_const" in experiment.results:
         ws_temp = wb.create_sheet("При постоянной температуре")
 
-        ws_temp.merge_cells("A1:D1")
+        ws_temp.merge_cells("A1:E1")
         title_cell = ws_temp["A1"]
-        title_cell.value = "Результаты при постоянной температуре"
+        title_cell.value = "Остаточная пористость при постоянной температуре"
         title_cell.font = header_font
         title_cell.alignment = Alignment(horizontal="center")
         title_cell.fill = header_fill
@@ -281,17 +279,17 @@ def export_experiment_to_excel(request, pk):
 
         for time in sorted_times:
             data = result_t_const[time]
-            ws_temp[f"A{row}"] = time
-            ws_temp[f"B{row}"] = data.get("tmin_const", "")
-            ws_temp[f"C{row}"] = data.get("tmax_const", "")
-            ws_temp[f"D{row}"] = data.get("tavg_const", "")
+            ws_temp[f"A{row}"] = float(time)
+            ws_temp[f"B{row}"] = float(data.get("tmin_const", ""))
+            ws_temp[f"C{row}"] = float(data.get("tmax_const", ""))
+            ws_temp[f"D{row}"] = float(data.get("tavg_const", ""))
 
             for col in ["A", "B", "C", "D"]:
                 cell = ws_temp[f"{col}{row}"]
                 cell.font = normal_font
                 cell.border = border
-                if col != "A":
-                    cell.alignment = Alignment(horizontal="center")
+                cell.number_format = "#.00"
+                cell.alignment = Alignment(horizontal="center")
 
             row += 1
 
@@ -302,9 +300,9 @@ def export_experiment_to_excel(request, pk):
     if experiment.results and "result_tau_const" in experiment.results:
         ws_time = wb.create_sheet("При постоянном времени")
 
-        ws_time.merge_cells("A1:D1")
+        ws_time.merge_cells("A1:F1")
         title_cell = ws_time["A1"]
-        title_cell.value = "Результаты при постоянном времени"
+        title_cell.value = "Остаточная пористость при постоянном времени изометрической выдержки"
         title_cell.font = header_font
         title_cell.alignment = Alignment(horizontal="center")
         title_cell.fill = header_fill
@@ -327,17 +325,17 @@ def export_experiment_to_excel(request, pk):
 
         for temp in sorted_temps:
             data = result_tau_const[temp]
-            ws_time[f"A{row}"] = temp
-            ws_time[f"B{row}"] = data.get("taumin_const", "")
-            ws_time[f"C{row}"] = data.get("taumax_const", "")
-            ws_time[f"D{row}"] = data.get("tauavg_const", "")
+            ws_time[f"A{row}"] = float(temp)
+            ws_time[f"B{row}"] = float(data.get("taumin_const", ""))
+            ws_time[f"C{row}"] = float(data.get("taumax_const", ""))
+            ws_time[f"D{row}"] = float(data.get("tauavg_const", ""))
 
             for col in ["A", "B", "C", "D"]:
                 cell = ws_time[f"{col}{row}"]
                 cell.font = normal_font
                 cell.border = border
-                if col != "A":
-                    cell.alignment = Alignment(horizontal="center")
+                cell.number_format = "#.00"
+                cell.alignment = Alignment(horizontal="center")
 
             row += 1
 
@@ -350,11 +348,13 @@ def export_experiment_to_excel(request, pk):
         if ws.title == "Информация об эксперименте":
             ws.column_dimensions["A"].width = 25
             ws.column_dimensions["B"].width = 20
-        elif ws.title in ["При постоянной температуре", "При постоянном времени"]:
-            ws.column_dimensions["A"].width = 15
+        elif ws.title in ["При постоянном времени", "При постоянной температуре"]:
+            ws.column_dimensions["A"].width = 20
             ws.column_dimensions["B"].width = 15
             ws.column_dimensions["C"].width = 15
             ws.column_dimensions["D"].width = 15
+            ws.column_dimensions["E"].width = 15
+            ws.column_dimensions["F"].width = 15
         elif ws.title == "Формула расчета":
             ws.column_dimensions["A"].width = 50
 
