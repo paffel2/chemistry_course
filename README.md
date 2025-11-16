@@ -15,6 +15,6 @@
   3. Запуск
 
      
-         manage.py runserver
+         python manage.py runserver
 
      
