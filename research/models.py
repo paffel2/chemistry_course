@@ -28,7 +28,7 @@ class MathModel(models.Model):
 
 
 class Experiment(models.Model):
-    math_model = models.ForeignKey(
+    material = models.ForeignKey(
         MathModel,
         verbose_name="Материал",
         on_delete=models.SET_NULL,
@@ -39,7 +39,10 @@ class Experiment(models.Model):
         verbose_name="Нижний порог температуры спекания в С",
         validators=[MinValueValidator(-273)],
     )
-    t_max = models.FloatField(verbose_name="Верхний порог температуры спекания в С",validators=[MinValueValidator(-273)])
+    t_max = models.FloatField(
+        verbose_name="Верхний порог температуры спекания в С",
+        validators=[MinValueValidator(-273)],
+    )
     t_avg = models.FloatField(
         verbose_name="Средняя температура спекания в С", default=0
     )
@@ -91,18 +94,18 @@ class Experiment(models.Model):
         process = psutil.Process(os.getpid())
         memory_before = process.memory_info().rss / 1024
         start_time = datetime.now()
-        a_0 = self.math_model.a_0
-        a_1 = self.math_model.a_1
-        a_2 = self.math_model.a_2
-        a_3 = self.math_model.a_3
-        a_4 = self.math_model.a_4
-        a_5 = self.math_model.a_5
-        a_6 = self.math_model.a_6
-        a_7 = self.math_model.a_7
-        a_8 = self.math_model.a_8
+        a_0 = self.material.a_0
+        a_1 = self.material.a_1
+        a_2 = self.material.a_2
+        a_3 = self.material.a_3
+        a_4 = self.material.a_4
+        a_5 = self.material.a_5
+        a_6 = self.material.a_6
+        a_7 = self.material.a_7
+        a_8 = self.material.a_8
 
         number_of_math_operations = 0
- 
+
         def polynom_calculate(t, tau):
             return (
                 a_0
@@ -168,7 +171,7 @@ class Experiment(models.Model):
         memory_after = process.memory_info().rss / 1024
         self.memory_used = round(memory_after - memory_before, 4)
         end_time = datetime.now()
-        calctime = round((end_time.timestamp() - start_time.timestamp())*1000,2)
+        calctime = round((end_time.timestamp() - start_time.timestamp()) * 1000, 2)
         self.calculation_time = calctime
         self.number_of_math_operations = number_of_math_operations
         self.save()

@@ -37,7 +37,7 @@ class AuthForm(AuthenticationForm):
 
 class ExperimentForm(forms.ModelForm):
 
-    math_model = forms.ModelChoiceField(
+    material = forms.ModelChoiceField(
         queryset=MathModel.objects.all(),
         label="Материал",
         widget=forms.Select(attrs={"class": "form-control"}),
@@ -46,43 +46,43 @@ class ExperimentForm(forms.ModelForm):
     t_min = forms.FloatField(
         label="Нижний порог температуры спекания (°C)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
-        initial=1300
+        initial=1300,
     )
 
     t_max = forms.FloatField(
         label="Верхний порог температуры спекания (°C)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
-        initial=1550
+        initial=1550,
     )
 
     delta_t = forms.FloatField(
         label="Шаг варьирования температуры спекания (°C)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
-        initial=10
+        initial=10,
     )
 
     tau_min = forms.FloatField(
         label="Нижний порог времени изометрической выдержки (мин)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
-        initial=30
+        initial=30,
     )
 
     tau_max = forms.FloatField(
         label="Верхний порог времени изометрической выдержки (мин)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
-        initial=60
+        initial=60,
     )
 
     delta_tau = forms.FloatField(
         label="Шаг варьирования времени изометрической выдержки (мин)",
         widget=forms.NumberInput(attrs={"class": "form-control"}),
-        initial=2
+        initial=2,
     )
 
     class Meta:
         model = Experiment
         fields = [
-            "math_model",
+            "material",
             "t_min",
             "t_max",
             "delta_t",

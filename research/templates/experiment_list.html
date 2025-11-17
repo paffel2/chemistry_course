@@ -28,7 +28,7 @@
                             {% for experiment in experiments %}
                             <tr>
                                 <td>{{ experiment.id }}</td>
-                                <td>{{ experiment.math_model.name|default:"Не указана" }}</td>
+                                <td>{{ experiment.material.name|default:"Не указана" }}</td>
                                 <td>{{ experiment.created_at|date:"d.m.Y H:i" }}</td>
                                 <td>{{ experiment.t_min }} - {{ experiment.t_max }}</td>
                                 <td>{{ experiment.tau_min }} - {{ experiment.tau_max }}</td>

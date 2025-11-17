@@ -35,7 +35,7 @@ class LogoutView(generic.View):
 @method_decorator(user_has_access, "dispatch")
 @method_decorator(never_cache, "dispatch")
 class IndexView(generic.RedirectView):
-    def get(self,*args,**kwargs):
+    def get(self, *args, **kwargs):
         return HttpResponseRedirect(reverse_lazy("research:experiment_list"))
 
 
@@ -206,7 +206,7 @@ def export_experiment_to_excel(request, pk):
     info_data = [
         (
             "Материал:",
-            experiment.math_model.name if experiment.math_model else "Не указана",
+            experiment.material.name if experiment.material else "Не указана",
         ),
         ("Дата проведения:", experiment.created_at.strftime("%d.%m.%Y %H:%M")),
         ("Диапазон температуры:", f"{experiment.t_min}°C - {experiment.t_max}°C"),
@@ -227,15 +227,15 @@ def export_experiment_to_excel(request, pk):
     ws_main["A12"].font = Font(size=12, bold=True)
 
     coefficients = [
-        ("a0", experiment.math_model.a_0),
-        ("a1", experiment.math_model.a_1),
-        ("a2", experiment.math_model.a_2),
-        ("a3", experiment.math_model.a_3),
-        ("a4", experiment.math_model.a_4),
-        ("a5", experiment.math_model.a_5),
-        ("a6", experiment.math_model.a_6),
-        ("a7", experiment.math_model.a_7),
-        ("a8", experiment.math_model.a_8),
+        ("a0", experiment.material.a_0),
+        ("a1", experiment.material.a_1),
+        ("a2", experiment.material.a_2),
+        ("a3", experiment.material.a_3),
+        ("a4", experiment.material.a_4),
+        ("a5", experiment.material.a_5),
+        ("a6", experiment.material.a_6),
+        ("a7", experiment.material.a_7),
+        ("a8", experiment.material.a_8),
     ]
 
     for i, (coef_name, coef_value) in enumerate(coefficients, start=13):
@@ -302,7 +302,9 @@ def export_experiment_to_excel(request, pk):
 
         ws_time.merge_cells("A1:F1")
         title_cell = ws_time["A1"]
-        title_cell.value = "Остаточная пористость при постоянном времени изометрической выдержки"
+        title_cell.value = (
+            "Остаточная пористость при постоянном времени изометрической выдержки"
+        )
         title_cell.font = header_font
         title_cell.alignment = Alignment(horizontal="center")
         title_cell.fill = header_fill
